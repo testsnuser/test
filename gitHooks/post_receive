@@ -1,0 +1,166 @@
+#!/usr/bin/env python
+
+## @author tarun.murala
+
+# Either create a Symlink or Use the GitHooks Config Dir
+
+import subprocess
+from collections import OrderedDict
+import re
+import os
+import json
+from xml.etree import ElementTree
+
+SNOW_URL = 'https://'
+SNOW_USER_NAME = 'admin'
+SNOW_USER_PASS = 'snow2004'
+INCLUDE_DIFF = True;
+
+DIFF_TREE_RE = re.compile("^:(?P<src_mode>[0-9]{6}) (?P<dst_mode>[0-9]{6}) (?P<src_hash>[0-9a-f]{7,40}) (?P<dst_hash>[0-9a-f]{7,40}) (?P<status>[ADMTUX]|[CR][0-9]{1,3})\s+(?P<file1>\S+)(?:\s+(?P<file2>\S+))?$", re.MULTILINE)
+
+response_data = {}
+response_data['source_versioning'] = 'GIT'
+response_data['added_files'] = []
+response_data['updated_files'] = []
+response_data['renamed_files'] = []
+response_data['deleted_files'] = []
+
+def run_git(args):
+    args = ['git'] + args
+    git = subprocess.Popen(args, stdout = subprocess.PIPE)
+    details = git.stdout.read()
+    details = details.decode("utf-8").strip()
+    return details
+
+def get_actual_file_name(file_name):
+    file_name_parts = file_name.strip().split('/')
+    return file_name_parts[len(file_name_parts) - 1].encode("ascii")
+
+def generate_diff_file(branch_name, commit_range, file_name):
+    actual_file_name = get_actual_file_name(file_name)
+    ref_name = (branch_name + ':' + file_name).encode("ascii")
+    p = subprocess.Popen(('git', 'diff', '87596500c6d85642008d215a1e41078b873ce831..21388adebf7410f91521bb7e78b4c63042dd9216', '--', 'first.js'), stdout=subprocess.PIPE)
+    output, errors = p.communicate()
+    if p.returncode:
+        raise Exception(errors)
+    else:
+        print output
+    return output
+
+def add_to_new_file(commit_sha, commit_range, file_name):
+    print "Scanning NEW File -> " + file_name
+    branch_name = get_branch_name(commit_sha, file_name)
+    output = generate_diff_file(branch_name, commit_range, file_name)
+
+    added_file = {'file_name': file_name}
+    if INCLUDE_DIFF:
+        added_file['diff'] = output
+
+    response_data['added_files'].append(added_file);
+
+def add_to_updated_file(commit_sha, commit_range, file_name):
+    print "Scanning MODIFIED File -> " + file_name
+    branch_name = get_branch_name(commit_sha, file_name)
+    output = generate_diff_file(branch_name, commit_range, file_name)
+
+    updated_file = {'file_name': file_name}
+    if INCLUDE_DIFF:
+        updated_file['diff'] = output
+
+    response_data['updated_files'].append(updated_file);
+    
+
+def add_to_renamed_file(commit_sha, commit_range, file_name):
+    print "Scanning RENAMED File -> " + file_name
+    branch_name = get_branch_name(commit_sha, file_name)
+    # output = generate_diff_file(branch_name, commit_range, file_name)
+
+    renamed_file = {'file_name': file_name}
+    response_data['renamed_files'].append(renamed_file);
+
+def add_to_deleted_file(commit_sha, commit_range, file_name):
+    print "Scanning RENAMED File -> " + file_name
+    branch_name = get_branch_name(commit_sha, file_name)
+    # output = generate_diff_file(branch_name, commit_range, file_name)
+
+    deleted_file = {'file_name': file_name}
+    response_data['deleted_files'].append(deleted_file);
+
+
+def get_branch_name(commit, ref):
+    branches = run_git(['branch', '--contains', commit]).split('\n')
+    CURR_BRANCH_RE = re.compile('^\* \w+$')
+    curr_branch = None
+
+    if len(branches) > 1:
+        on_master = False
+        for branch in branches:
+            if CURR_BRANCH_RE.match(branch):
+                curr_branch = branch.strip('* \n')
+            elif branch.strip() == 'master':
+                on_master = True
+
+        if curr_branch is None and on_master:
+            curr_branch = 'master'
+
+    if curr_branch is None:
+        curr_branch = branches[0].strip('* \n')
+
+    base_ref = 'refs/heads/%s' % curr_branch
+
+    if base_ref == ref:
+        print "branch_name -> None"
+        return None
+    else:
+        print "branch_name -> " + base_ref
+        return base_ref
+
+def call_snow_instance(old, new, head_commit=False):
+    if re.match("^0+$", old):
+        if not head_commit:
+            return []
+
+        commit_range = '%s~1..%s' % (new, new)
+    else:
+        commit_range = '%s..%s' % (old, new)
+
+    revs = run_git(['rev-list', '--pretty=medium', '--reverse', commit_range])
+    sections = revs.split('\n\n')
+
+    s = 0
+    while s < len(sections):
+        lines = sections[s].split('\n')
+        commit_sha = lines[0].strip().split(' ')[1].encode("ascii")
+        output = run_git(['diff-tree', '-r', '-C', '%s' % commit_sha])
+        # print output
+        for i in DIFF_TREE_RE.finditer(output):
+            item = i.groupdict()
+            status = item['status']
+            file_name = item['file1'];
+            # print item
+            # print status
+            # print file_name
+            if item['status'] == 'A':      
+                add_to_new_file(commit_sha, commit_range, file_name)
+            elif item['status'] == 'M':    
+                add_to_updated_file(commit_sha, commit_range, file_name)
+            elif item['status'] == 'R':    
+                add_to_renamed_file(commit_sha, commit_range, file_name)
+            elif item['status'] == 'D':    
+                add_to_deleted_file(commit_sha, commit_range, file_name)
+            
+        s+=2
+
+
+## MAIN CODE
+# if __name__ == "__main__":
+#     for line in sys.stdin:
+#         old, new, ref = line.strip().split(' ')
+#         print "old -> " + old + "| new -> " + new + " | ref -> " + ref
+#         call_snow_instance(old, new, ref)
+
+## TEST Code - After seeding the test files
+call_snow_instance('87596500c6d85642008d215a1e41078b873ce831', '21388adebf7410f91521bb7e78b4c63042dd9216')
+
+json_response = json.dumps(response_data)
+print json_response
