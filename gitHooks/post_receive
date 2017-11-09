@@ -20,6 +20,7 @@ DIFF_TREE_RE = re.compile("^:(?P<src_mode>[0-9]{6}) (?P<dst_mode>[0-9]{6}) (?P<s
 
 response_data = {}
 response_data['source_versioning'] = 'GIT'
+response_data['message'] = ''
 response_data['added_files'] = []
 response_data['updated_files'] = []
 response_data['renamed_files'] = []
@@ -32,6 +33,9 @@ def run_git(args):
     details = details.decode("utf-8").strip()
     return details
 
+def get_message(commit):
+    return run_git(['log', '--format=%B', '-n', '1', commit])
+
 def get_actual_file_name(file_name):
     file_name_parts = file_name.strip().split('/')
     return file_name_parts[len(file_name_parts) - 1].encode("ascii")
@@ -39,39 +43,47 @@ def get_actual_file_name(file_name):
 def generate_diff_file(branch_name, commit_range, file_name):
     actual_file_name = get_actual_file_name(file_name)
     ref_name = (branch_name + ':' + file_name).encode("ascii")
-    p = subprocess.Popen(('git', 'diff', '87596500c6d85642008d215a1e41078b873ce831..21388adebf7410f91521bb7e78b4c63042dd9216', '--', 'first.js'), stdout=subprocess.PIPE)
-    output, errors = p.communicate()
-    if p.returncode:
-        raise Exception(errors)
-    else:
-        print output
-    return output
+    return run_git(['diff', commit_range, '--', file_name])
+
+def filter_diff(diff):
+    lines = diff.split('\n')
+    s = 0
+    while s < len(lines):
+        if "@@" not in lines[s]:
+            s = s+1
+            continue
+        else:
+            break;
+
+    filtered_diff = lines[s:]
+    # print filtered_diff
+    return "\n".join(filtered_diff);
 
 def add_to_new_file(commit_sha, commit_range, file_name):
-    print "Scanning NEW File -> " + file_name
+    print "Reading NEW File -> " + file_name
     branch_name = get_branch_name(commit_sha, file_name)
     output = generate_diff_file(branch_name, commit_range, file_name)
-
+    filtered_output = filter_diff(output);
     added_file = {'file_name': file_name}
     if INCLUDE_DIFF:
-        added_file['diff'] = output
+        added_file['diff'] = filtered_output
 
     response_data['added_files'].append(added_file);
 
 def add_to_updated_file(commit_sha, commit_range, file_name):
-    print "Scanning MODIFIED File -> " + file_name
+    print "Reading MODIFIED File -> " + file_name
     branch_name = get_branch_name(commit_sha, file_name)
     output = generate_diff_file(branch_name, commit_range, file_name)
-
+    filtered_output = filter_diff(output);
     updated_file = {'file_name': file_name}
     if INCLUDE_DIFF:
-        updated_file['diff'] = output
+        updated_file['diff'] = filtered_output
 
     response_data['updated_files'].append(updated_file);
     
 
 def add_to_renamed_file(commit_sha, commit_range, file_name):
-    print "Scanning RENAMED File -> " + file_name
+    print "Reading RENAMED File -> " + file_name
     branch_name = get_branch_name(commit_sha, file_name)
     # output = generate_diff_file(branch_name, commit_range, file_name)
 
@@ -79,7 +91,7 @@ def add_to_renamed_file(commit_sha, commit_range, file_name):
     response_data['renamed_files'].append(renamed_file);
 
 def add_to_deleted_file(commit_sha, commit_range, file_name):
-    print "Scanning RENAMED File -> " + file_name
+    print "Reading RENAMED File -> " + file_name
     branch_name = get_branch_name(commit_sha, file_name)
     # output = generate_diff_file(branch_name, commit_range, file_name)
 
@@ -124,7 +136,9 @@ def call_snow_instance(old, new, head_commit=False):
     else:
         commit_range = '%s..%s' % (old, new)
 
+    response_data['message'] = get_message(new)
     revs = run_git(['rev-list', '--pretty=medium', '--reverse', commit_range])
+    # print revs
     sections = revs.split('\n\n')
 
     s = 0
@@ -160,7 +174,7 @@ def call_snow_instance(old, new, head_commit=False):
 #         call_snow_instance(old, new, ref)
 
 ## TEST Code - After seeding the test files
-call_snow_instance('87596500c6d85642008d215a1e41078b873ce831', '21388adebf7410f91521bb7e78b4c63042dd9216')
+call_snow_instance('ba398801e018f5e1be53a3a1d3533a04f3a0c56f', 'a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324')
 
 json_response = json.dumps(response_data)
 print json_response
