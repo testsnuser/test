@@ -48,7 +48,7 @@ The Sample JSON generated as below:
 
 Sample run can made like:
 
-call_snow_instance('ba398801e018f5e1be53a3a1d3533a04f3a0c56f', 'a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324')
+    call_snow_instance('ba398801e018f5e1be53a3a1d3533a04f3a0c56f', 'a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324')
 
 
 Thanks,
