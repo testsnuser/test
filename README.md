@@ -26,24 +26,24 @@ The Post Recieve Hook reads the "Commit2" performs the following:
 
 The Sample JSON generated as below:
 
-{
-  "added_files": [
     {
-      "file_name": "second.js",
-      "diff": "@@ -0,0 +1,3 @@\n+function second (message) {\n+    console.log('Hello' + message);\n+}\n\\ No newline at end of file"
+      "added_files": [
+        {
+          "file_name": "second.js",
+          "diff": "@@ -0,0 +1,3 @@\n+function second (message) {\n+    console.log('Hello' + message);\n+}\n\\ No newline at end of file"
+        }
+      ],
+      "deleted_files": [],
+      "renamed_files": [],
+      "updated_files": [
+        {
+          "file_name": "first.js",
+          "diff": "@@ -1,3 +1,6 @@\n function first (name) {\n     console.log('Hi ' + name);\n+}\n+function first_udpated (name) {\n+    console.log('Hello ' + name);\n }\n\\ No newline at end of file"
+        }
+      ],
+      "message": "STRY0010015: Commit2",
+      "source_versioning": "GIT"
     }
-  ],
-  "deleted_files": [],
-  "renamed_files": [],
-  "updated_files": [
-    {
-      "file_name": "first.js",
-      "diff": "@@ -1,3 +1,6 @@\n function first (name) {\n     console.log('Hi ' + name);\n+}\n+function first_udpated (name) {\n+    console.log('Hello ' + name);\n }\n\\ No newline at end of file"
-    }
-  ],
-  "message": "STRY0010015: Commit2",
-  "source_versioning": "GIT"
-}
 
 
 Sample run can made like:
