@@ -5,15 +5,13 @@
 # Either create a Symlink or Use the GitHooks Config Dir
 
 import subprocess
-from collections import OrderedDict
 import re
-import os
 import json
-from xml.etree import ElementTree
+import requests
 
-SNOW_URL = 'https://'
+SNOW_URL = 'http://localhost:8080/api/now/commit_integration_api'
 SNOW_USER_NAME = 'admin'
-SNOW_USER_PASS = 'snow2004'
+SNOW_USER_PASS = 'admin'
 INCLUDE_DIFF = True;
 
 DIFF_TREE_RE = re.compile("^:(?P<src_mode>[0-9]{6}) (?P<dst_mode>[0-9]{6}) (?P<src_hash>[0-9a-f]{7,40}) (?P<dst_hash>[0-9a-f]{7,40}) (?P<status>[ADMTUX]|[CR][0-9]{1,3})\s+(?P<file1>\S+)(?:\s+(?P<file2>\S+))?$", re.MULTILINE)
@@ -174,6 +172,11 @@ def call_snow_instance(old, new, head_commit=False):
             
         s+=2
 
+    json_data = json.dumps(response_data)
+    print json_data
+    resp = requests.post(SNOW_URL, data=json_data, auth=(SNOW_USER_NAME, SNOW_USER_PASS))
+    print resp
+
 
 ## MAIN CODE
 # if __name__ == "__main__":
@@ -184,6 +187,3 @@ def call_snow_instance(old, new, head_commit=False):
 
 ## TEST Code - After seeding the test files
 call_snow_instance('ba398801e018f5e1be53a3a1d3533a04f3a0c56f', 'a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324')
-
-json_response = json.dumps(response_data)
-print json_response

@@ -1,6 +1,12 @@
 This is Sample Git Repository to Validate the Git Pushes to Remote Instance calls with the updates.
 Hopefully, You will learn the integrations though this.
 
+Pre-requistes: 
+    Make sure Python (with requests module) is installed
+    Configure the SNOW_URL, SNOW_USER_NAME, SNOW_USER_PASS
+
+    If you do not want the diff to be includes, Set the INCLUDE_DIFF to False
+
 For Testing we will looking into the one of the commits:
     commit a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324
     Author: tarun.murala <tarun.murala@servicenow.com>
