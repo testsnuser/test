@@ -2,24 +2,24 @@ This is Sample Git Repository to Validate the Git Pushes to Remote Instance call
 Hopefully, You will learn the integrations though this.
 
 Pre-requistes: 
+    
     Make sure Python (with requests module) is installed
     Configure the SNOW_URL, SNOW_USER_NAME, SNOW_USER_PASS
-
-    If you do not want the diff to be includes, Set the INCLUDE_DIFF to False
+    If you do not want the diff to be included, Set the INCLUDE_DIFF to False
 
 For Testing we will looking into the one of the commits:
+    
     commit a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324
     Author: tarun.murala <tarun.murala@servicenow.com>
     Date:   Wed Nov 8 15:24:48 2017 -0800
-
         STRY0010015: Commit2
 
 
 Prior commit
+    
     commit ba398801e018f5e1be53a3a1d3533a04f3a0c56f
     Author: tarun.murala <tarun.murala@servicenow.com>
     Date:   Wed Nov 8 15:21:40 2017 -0800
-
         STRY0010015: First Commit
 
 
