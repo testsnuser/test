@@ -2,19 +2,19 @@ This is Sample Git Repository to Validate the Git Pushes to Remote Instance call
 Hopefully, You will learn the integrations though this.
 
 For Testing we will looking into the one of the commits:
-commit a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324
-Author: tarun.murala <tarun.murala@servicenow.com>
-Date:   Wed Nov 8 15:24:48 2017 -0800
+    commit a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324
+    Author: tarun.murala <tarun.murala@servicenow.com>
+    Date:   Wed Nov 8 15:24:48 2017 -0800
 
-    STRY0010015: Commit2
+        STRY0010015: Commit2
 
 
 Prior commit
-commit ba398801e018f5e1be53a3a1d3533a04f3a0c56f
-Author: tarun.murala <tarun.murala@servicenow.com>
-Date:   Wed Nov 8 15:21:40 2017 -0800
+    commit ba398801e018f5e1be53a3a1d3533a04f3a0c56f
+    Author: tarun.murala <tarun.murala@servicenow.com>
+    Date:   Wed Nov 8 15:21:40 2017 -0800
 
-    STRY0010015: First Commit
+        STRY0010015: First Commit
 
 
 The Post Recieve Hook reads the "Commit2" performs the following:
@@ -27,6 +27,9 @@ The Post Recieve Hook reads the "Commit2" performs the following:
 The Sample JSON generated as below:
 
     {
+      "commit_id": "a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324",
+      "committer": "'tarun.murala@servicenow.com'",
+      "branch": "refs/heads/master",
       "added_files": [
         {
           "file_name": "second.js",
@@ -34,6 +37,7 @@ The Sample JSON generated as below:
         }
       ],
       "deleted_files": [],
+      "repo_url": "https://testsnuser@github.com/testsnuser/test.git",
       "renamed_files": [],
       "updated_files": [
         {

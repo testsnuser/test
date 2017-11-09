@@ -21,6 +21,10 @@ DIFF_TREE_RE = re.compile("^:(?P<src_mode>[0-9]{6}) (?P<dst_mode>[0-9]{6}) (?P<s
 response_data = {}
 response_data['source_versioning'] = 'GIT'
 response_data['message'] = ''
+response_data['branch'] = ''
+response_data['committer'] = ''
+response_data['commit_id'] = ''
+response_data['repo_url'] = ''
 response_data['added_files'] = []
 response_data['updated_files'] = []
 response_data['renamed_files'] = []
@@ -35,6 +39,12 @@ def run_git(args):
 
 def get_message(commit):
     return run_git(['log', '--format=%B', '-n', '1', commit])
+
+def get_repo():
+    return run_git(['config', '--get', 'remote.origin.url'])
+
+def get_commiter(commit):
+    return run_git(['log', "--format='%ae'", commit+"^!"])
 
 def get_actual_file_name(file_name):
     file_name_parts = file_name.strip().split('/')
@@ -61,7 +71,7 @@ def filter_diff(diff):
 
 def add_to_new_file(commit_sha, commit_range, file_name):
     print "Reading NEW File -> " + file_name
-    branch_name = get_branch_name(commit_sha, file_name)
+    branch_name = get_branch_name(commit_sha)
     output = generate_diff_file(branch_name, commit_range, file_name)
     filtered_output = filter_diff(output);
     added_file = {'file_name': file_name}
@@ -72,7 +82,7 @@ def add_to_new_file(commit_sha, commit_range, file_name):
 
 def add_to_updated_file(commit_sha, commit_range, file_name):
     print "Reading MODIFIED File -> " + file_name
-    branch_name = get_branch_name(commit_sha, file_name)
+    branch_name = get_branch_name(commit_sha)
     output = generate_diff_file(branch_name, commit_range, file_name)
     filtered_output = filter_diff(output);
     updated_file = {'file_name': file_name}
@@ -84,7 +94,7 @@ def add_to_updated_file(commit_sha, commit_range, file_name):
 
 def add_to_renamed_file(commit_sha, commit_range, file_name):
     print "Reading RENAMED File -> " + file_name
-    branch_name = get_branch_name(commit_sha, file_name)
+    branch_name = get_branch_name(commit_sha)
     # output = generate_diff_file(branch_name, commit_range, file_name)
 
     renamed_file = {'file_name': file_name}
@@ -92,14 +102,14 @@ def add_to_renamed_file(commit_sha, commit_range, file_name):
 
 def add_to_deleted_file(commit_sha, commit_range, file_name):
     print "Reading RENAMED File -> " + file_name
-    branch_name = get_branch_name(commit_sha, file_name)
+    branch_name = get_branch_name(commit_sha)
     # output = generate_diff_file(branch_name, commit_range, file_name)
 
     deleted_file = {'file_name': file_name}
     response_data['deleted_files'].append(deleted_file);
 
 
-def get_branch_name(commit, ref):
+def get_branch_name(commit):
     branches = run_git(['branch', '--contains', commit]).split('\n')
     CURR_BRANCH_RE = re.compile('^\* \w+$')
     curr_branch = None
@@ -119,13 +129,7 @@ def get_branch_name(commit, ref):
         curr_branch = branches[0].strip('* \n')
 
     base_ref = 'refs/heads/%s' % curr_branch
-
-    if base_ref == ref:
-        print "branch_name -> None"
-        return None
-    else:
-        print "branch_name -> " + base_ref
-        return base_ref
+    return base_ref
 
 def call_snow_instance(old, new, head_commit=False):
     if re.match("^0+$", old):
@@ -137,6 +141,11 @@ def call_snow_instance(old, new, head_commit=False):
         commit_range = '%s..%s' % (old, new)
 
     response_data['message'] = get_message(new)
+    # Can use the ref instead for branch
+    response_data['branch'] = get_branch_name(new)
+    response_data['committer'] = get_commiter(new)
+    response_data['commit_id'] = new
+    response_data['repo_url'] = get_repo()
     revs = run_git(['rev-list', '--pretty=medium', '--reverse', commit_range])
     # print revs
     sections = revs.split('\n\n')
