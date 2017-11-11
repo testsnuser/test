@@ -1,3 +1,4 @@
+========================= GIT Integration =======================================
 This is Sample Git Repository to Validate the Git Pushes to Remote Instance calls with the updates.
 Hopefully, You will learn the integrations though this.
 
@@ -60,6 +61,40 @@ Sample run can made like:
 
     call_snow_instance('ba398801e018f5e1be53a3a1d3533a04f3a0c56f', 'a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324')
 
+
+
+========================= Jenkins Integration =======================================
+For posting the Build and Test results, Post Build Actions as to be defined.
+The Post Build Actions are coded in the Groovy. 
+
+Post Build Action can be either Declarative or Scripted. 
+We have taken the Scripted Groovy Post Build Action approach.
+
+Update the script according to include
+  
+  SNOW_URL
+  SNOW_USER_NAME
+  SNOW_USER_PASS
+
+To Include the Log, Set the following to True
+  
+  INCLUDE_LOG
+
+Refer the following:
+When the Build is complete
+  
+  postBuild.groovy
+
+This will post the results to BUILD_INTEGRATION_API (can be configured).
+
+When the Tests are complete
+  
+  postTest.groovy
+
+This will post the results to TEST_INTEGRATION_API (can be configured).
+
+
+                !!!!! HAPPY INTEGRATING :tada:
 
 Thanks,
 Tarun
