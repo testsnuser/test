@@ -1,4 +1,5 @@
 ========================= GIT Integration =======================================
+
 This is Sample Git Repository to Validate the Git Pushes to Remote Instance calls with the updates.
 Hopefully, You will learn the integrations though this.
 
@@ -64,6 +65,7 @@ Sample run can made like:
 
 
 ========================= Jenkins Integration =======================================
+
 For posting the Build and Test results, Post Build Actions as to be defined.
 The Post Build Actions are coded in the Groovy. 
 
@@ -86,6 +88,19 @@ When the Build is complete
   postBuild.groovy
 
 This will post the results to BUILD_INTEGRATION_API (can be configured).
+The sample Build JSON generated:
+
+
+    {   build:
+            {   build_name:TarunBuildProject,
+                build_number:13, 
+                build_url:job/TarunBuildProject/13/, 
+                build_result:SUCCESS, 
+                build_source:JENKINS, 
+                branch_name: '*/master',
+                log:'Started by user jenkins.admin@e.com ...'
+            }
+    }
 
 When the Tests are complete
   
@@ -93,8 +108,7 @@ When the Tests are complete
 
 This will post the results to TEST_INTEGRATION_API (can be configured).
 
-
-                !!!!! HAPPY INTEGRATING :tada:
+        !!!!! HAPPY INTEGRATING !!!!!
 
 Thanks,
 Tarun

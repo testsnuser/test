@@ -1,6 +1,10 @@
 //  @author tarun.murala
 
-import groovy.json.*
+import groovy.json.*;
+import jenkins.model.*;
+import hudson.model.*;
+import hudson.tasks.*;
+import hudson.plugins.git.*;
 
 manager.listener.logger.println "Into Post Build Script"
 
@@ -17,10 +21,12 @@ def jsonObj = json.build {
     build_number manager.build.number
     build_url manager.build.url
     build_result result.toString()
+    build_source "JENKINS"
+    branch_name manager.build.project.scm.branches[0].name
 }
 
 if (INCLUDE_LOG) {
-    jsonObj.log = buildLog
+    jsonObj.buildlog = buildLog
 }
 
 manager.listener.logger.println jsonObj.toString()

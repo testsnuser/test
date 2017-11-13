@@ -24,6 +24,8 @@ def jsonObj = json.build {
     build_name manager.build.project.getName()
     build_number manager.build.number
     build_url manager.build.url
+    build_source "JENKINS"
+    branch_name manager.build.project.scm.branches[0].name
     total_tests total
     failed_tests failed
     skipped_tests skipped
