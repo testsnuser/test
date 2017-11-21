@@ -186,4 +186,4 @@ def call_snow_instance(old, new, head_commit=False):
 #         call_snow_instance(old, new, ref)
 
 ## TEST Code - After seeding the test files
-call_snow_instance('ba398801e018f5e1be53a3a1d3533a04f3a0c56f', 'a2b1adeca4b1d908cd0a9517e4dc39dc73c7b324')
+call_snow_instance('c60eff4442015a6b5a287f6f825196e0ae95bd98', '4342033554dbe1fbf308304862ae7c994fb25e44')
