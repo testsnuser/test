@@ -1,6 +1,7 @@
 //  @author tarun.murala
 
-import groovy.json.*
+import java.util.*;
+import groovy.json.*;
 import jenkins.model.*;
 import hudson.model.*;
 import hudson.tasks.*;
@@ -15,7 +16,8 @@ def SNOW_USER_PASS = "admin"
 
 def json = new groovy.json.JsonBuilder()
 def build = manager.build
-def testResultAction = build.testResultAction
+def testResultAction = build.getAction(hudson.tasks.junit.TestResultAction.class)
+manager.listener.logger.println("TestResultAction -> " + testResultAction)
 def jsonObj = json.build {
     build_name build.project.getName()
     build_number build.number
@@ -27,14 +29,36 @@ if (null != testResultAction) {
     jsonObj.build.total_count = testResultAction.totalCount
     jsonObj.build.failed_count = testResultAction.failCount
     jsonObj.build.skipped_count = testResultAction.skipCount
-    jsonObj.build.passed_count = total - failed - skipped
+    //jsonObj.build.passed_count = testResultAction.passCount
+
+    def tests = [:]
+    def passedTests = testResultAction.getPassedTests();
+    def failedTests = testResultAction.getFailedTests();
+    def skippedTests = testResultAction.getSkippedTests();
+    passedTests.each { t ->
+        if(!tests.containsKey(t.getClassName())) {
+            tests[t.getClassName()] = []
+        }
+        def testMap = ['name': t.getName(), 'status': t.getStatus(), 'url': t.getUrl(), 'details': t.getErrorDetails()];
+        tests[t.getClassName()].add(testMap);
+    }
+    failedTests.each { t ->
+        if(!tests.containsKey(t.getClassName())) {
+            tests[t.getClassName()] = []
+        }
+        def testMap = ['name': t.getName(), 'status': t.getStatus(), 'url': t.getUrl(), 'details': t.getErrorDetails()];
+        tests[t.getClassName()].add(testMap);
+    }
+    skippedTests.each { t ->
+        if(!tests.containsKey(t.getClassName())) {
+            tests[t.getClassName()] = []
+        }
+        def testMap = ['name': t.getName(), 'status': t.getStatus(), 'url': t.getUrl(), 'details': t.getErrorDetails()];
+        tests[t.getClassName()].add(testMap);
+    }
+    jsonObj.put('tests', tests)
 }
-def testAction = build.getAction(hudson.tasks.junit.TestResultAction.class);
-if(null != testAction) {
-    jsonObj.build.passed build.getAction(hudson.tasks.junit.TestResultAction.class).getPassedTests()
-    jsonObj.build.failed build.getAction(hudson.tasks.junit.TestResultAction.class).getFailedTests()    
-}
-// manager.listener.logger.println jsonObj.toString()
+manager.listener.logger.println jsonObj.toString()
 
 def post = new URL(SNOW_URL).openConnection();
 def userpass = SNOW_USER_NAME + ":" + SNOW_USER_PASS;

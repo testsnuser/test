@@ -107,6 +107,41 @@ When the Tests are complete
   postTest.groovy
 
 This will post the results to TEST_INTEGRATION_API (can be configured).
+The sample Test JSON generated:
+      
+
+      {
+        "build": {
+          "build_name": "TarunTestProject",
+          "build_number": "19",
+          "build_url": "job/TarunTestProject/19/",
+          "build_source": "JENKINS",
+          "branch_name": "*/master",
+          "total_count": 2,
+          "failed_count": 0,
+          "skipped_count": 0
+        },
+        "tests": {
+          "com.tarun.test.AdditionTest": [
+            {
+              "name": "testAdd",
+              "status": "PASSED",
+              "url": "/junit/com.tarun.test/AdditionTest/testAdd",
+              "details": "null"
+            }
+          ],
+          "com.tarun.test.SubtractionTest": [
+            {
+              "name": "testSubtract",
+              "status": "PASSED",
+              "url": "/junit/com.tarun.test/SubtractionTest/testSubtract",
+              "details": "null"
+            }
+          ]
+        }
+      }
+
+
 
         !!!!! HAPPY INTEGRATING !!!!!
 
